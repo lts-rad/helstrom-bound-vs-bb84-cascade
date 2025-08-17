@@ -30,7 +30,7 @@ Alice → Eve (quadrature measurement) → Bob
 
 Eve's measurement:
 ├─ Correct (90.8%)
-│   └─ Re-sends correct state → Bob receives match (85.4%)
+│   └─ Re-sends correct state → Bob receives match (90.8%)
 │
 └─ Incorrect (9.2%)
     └─ Re-sends wrong state
