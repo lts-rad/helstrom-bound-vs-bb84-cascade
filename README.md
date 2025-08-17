@@ -1,4 +1,4 @@
-# BB84 Attack with Coherent Quadrature Measurement at amplitude <1.0
+# BB84 Attack with Coherent Quadrature Measurement at amplitude ~1.0
 
 ### Assumptions
 
