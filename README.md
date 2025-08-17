@@ -1,5 +1,9 @@
 # QKD Analyais with Quadrature Measurement 
 
+## Prepare & Measure BB84 up to check bits
+
+<img width="567" height="539" alt="image" src="https://github.com/user-attachments/assets/0885c8b0-dba7-4ba2-ad16-86a8e7bc903e" />
+
 ## Attack Concept 
 
 Eve performs a quadrature measurement at the helstrom limit and re-transmits the qubits to Bob, with some error. Consider that at photon amplitude 1.0 the helstrom error is approximately 0.092.  The branch diagram below shows the statistics for what Bob measures when his basis matches Alice’s 
