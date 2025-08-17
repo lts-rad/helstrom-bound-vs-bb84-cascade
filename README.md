@@ -1,4 +1,20 @@
-# QKD Analyais with Quadrature Measurement 
+# BB84 Attack with Coherent Quadrature Measurement at amplitude <1.0
+
+### Assumptions
+
+We will use a simplified model with the following parameters:
+- Eve must obey the laws of quantum mechanics
+- Eve must compute in polynomial time and memory (and so must Alice and Bob for error correction)
+- We assume no side channels or imperfections in Alice and Bob’s equipment
+- Alice never sends more or less than 1.0 photon (with some physical implementation), so PNS (photon number splitting attacks) do not apply.
+- For simplicity, we assume a zero noise channel between Alice and Eve, and a zero noise channel between Eve and Bob. 
+- Under normal conditions when Eve is not present, Alice and Bob expect and accept an error rate threshold. 
+- Alice and Bob perform one-way 4-state BB84 with prepare & measure
+- Alice and Bob do not use hardening measures for BB84 such as decoy states, and weaker (<1) coherent states of light
+- Alice transmits single photon sources, with amplitude=1.0, using 4-QPSK states
+- Alice and Bob use secure random number sources 
+- Alice and Bob’s classical channel is authenticated. While it is fully visible to Eve, it is not malleable to Eve and she can not recover the authentication keys to manipulate the classical channel.
+
 
 ## Prepare & Measure BB84 up to check bits
 
