@@ -5,7 +5,7 @@
 Eve performs a quadrature measurement at the helstrom limit and re-transmits the qubits to Bob, with some error. Consider that at photon amplitude 1.0 the helstrom error is approximately 0.092.  The branch diagram below shows the statistics for what Bob measures when his basis matches Alice’s 
 
 
-
+```
 Alice → Eve (quadrature measurement) → Bob
 
 Eve's measurement:
@@ -25,10 +25,10 @@ Eve's measurement:
 Final outcomes at Bob:
 - Match alice: 90.8% + 3.06% = 93.86%
 - Error alice: 3.06% + 3.06% = 6.12%
-
+```
 Next step 5 occurs and Alice reveals her Basis choices. Eve knows the following statistics about Eve’s bitstream choice when Alice’s Basis matches Bob’s basis. The knowledge is ambiguous in that Alice does not know the exact value of any of the bits, only the statistics of those values as diagramed here: 
 
-
+```
            Alice reveals basis choices
                       |
                       ▼
@@ -51,7 +51,7 @@ Eve measured    from Eve's            distributed
                                      • Doesn't know specific ves
     
 [Eve knows distributions but NO specific values for each]
-
+```
 
 
 A key insight emerges when considering Eve’s knowledge of Bob’s state after sifting. When Alice has announced her basis choices, Eve learns a large part of Bob’s bitstream unambiguously when the quadrature measurements were on the correct basis. Assuming 0% channel noise to Bob, the transmissions in this Basis when Alice = Eve are identical in value to what Bob has read. When Alice and Bob’s basis differs, Bob discards them, so we do not need to consider their values.  The quadrature measurement can fail on the right basis as well, but Bob will correspondingly have the same error Eve read from Alice and sent to Bob. 
@@ -59,7 +59,7 @@ A key insight emerges when considering Eve’s knowledge of Bob’s state after 
 In this way BB84’s step 5 upgrades the ambiguous measurement to mostly unambiguous knowledge with respect to the information shared between Eve and Bob. The amount of ambiguous information remaining has a 50% random distribution, when Alice and Bob share a basis but Eve measured the basis incorrectly. This will be approximately 2/3rd of the helstrom bound error and arguably the security of BB84 under these conditions is reduced to this quantity.
 
 
-
+```
 
            Alice reveals basis choices
                       |
@@ -88,7 +88,7 @@ Alice sent      (opposite of           distributed
      what Bob received for ALL           NOT specific values -
      93.86% of these bits]               only 50-50 statistics]
 
-
+```
 
 
 The next thing to consider is the impact of quadrature measurement on the resulting QBER between Alice and Bob. We assume Eve has noiseless channels to both Alice and to Bob. 
@@ -106,8 +106,16 @@ So if Bob and Alice set their tolerable QBER above ⅔ * HBER, Eve can intercept
 
 It is worth noting that Eve can also reduce her sampling rate to further reduce Alice & Bob’s QBER. If the QBER tolerance on the check bits were 5% then Eve could adjust to sampling 80% of the time (0.092*⅔ * 0.80 = 0.05 QBER) 
 
+## Attack Results 
 
+**constraint solver simulation**
+<img width="1483" height="992" alt="image" src="https://github.com/user-attachments/assets/acec0f48-59fb-4985-85c3-219d9f904837" />
 
+**eve sampling rate 3d plot** 
+<img width="2144" height="1788" alt="image" src="https://github.com/user-attachments/assets/3128d88f-ddc3-49fa-b659-7b91ad3c679c" />
+
+**potential theoretical worst case bounds for secure keyrates**
+<img width="2742" height="2222" alt="image" src="https://github.com/user-attachments/assets/b4ef0b35-3d1b-4f6e-a761-8a70e08584c3" />
 
 ## Using the code
 
