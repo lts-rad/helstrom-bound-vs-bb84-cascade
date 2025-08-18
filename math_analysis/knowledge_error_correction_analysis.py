@@ -272,7 +272,7 @@ def plot_measurement_error_analysis(error_range: Tuple[float, float] = (0.0, 0.2
             eve_ec_advantage = calculate_eve_ec_advantage(qber)
             
             # Alice loses the full leakage, Eve gains only the additional advantage
-            net_alice_knowledge = alice_knowledge - ec_leakage
+            net_alice_knowledge = alice_knowledge  # Alice doesn't lose knowledge from EC
             net_eve_knowledge = eve_knowledge + eve_ec_advantage
             
             sampling_results['qber_values'].append(qber)
