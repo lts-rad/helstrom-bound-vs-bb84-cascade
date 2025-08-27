@@ -168,7 +168,7 @@ class QuadratureAttackModel:
         channel = ConstraintCollector(self.alice_key, constraints)
         # Use the expected QBER for CASCADE (2*ERATE/3)
         expected_qber = 2 * ERATE / 3
-        reconciliation = Reconciliation("original", channel, self.bob_key, expected_qber)
+        reconciliation = Reconciliation("option4", channel, self.bob_key, expected_qber)
 
         try:
             reconciliation.reconcile()

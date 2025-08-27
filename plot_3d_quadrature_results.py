@@ -109,7 +109,7 @@ def run_attack_with_intercept(raw_size, intercept_rate, num_seeds=10):
                     return parities
 
             channel = ConstraintCollector(model.alice_key, constraints)
-            reconciliation = Reconciliation("original", channel, model.bob_key, 2*ERATE/3)
+            reconciliation = Reconciliation("option4", channel, model.bob_key, 2*ERATE/3)
             reconciliation.reconcile()
 
             # Use chunked solver for larger keys
