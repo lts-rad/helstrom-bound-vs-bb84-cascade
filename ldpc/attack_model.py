@@ -4,7 +4,7 @@ LDPC Attack Model: Eve observes syndrome and disclosed bits to recover Alice/Bob
 This model simulates Eve's attack on LDPC error correction in QKD:
 1. Eve observes the syndrome bits Alice sends to Bob
 2. Eve observes the disclosed bits from interactive error correction
-3. Eve uses Z3 constraint solving to recover Alice and Bob's bits
+3. Eve performs LDPC correction to recover alice's codeword
 
 Based on the quadrature_attack_model.py approach but adapted for LDPC constraints.
 """
