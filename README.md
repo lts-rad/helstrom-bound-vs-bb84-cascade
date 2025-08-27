@@ -134,6 +134,10 @@ It is worth noting that Eve can also reduce her sampling rate to further reduce 
 **eve sampling rate 3d plot** 
 <img width="2144" height="1788" alt="image" src="https://github.com/user-attachments/assets/3128d88f-ddc3-49fa-b659-7b91ad3c679c" />
 
+**knowledgeknowledge_error_correction_analysis.py**
+<img width="5084" height="2574" alt="image" src="https://github.com/user-attachments/assets/2ed03c56-0651-4464-8678-f45d377b7f71" />
+
+
 **potential theoretical worst case bounds for secure keyrates**
 <img width="2742" height="2222" alt="image" src="https://github.com/user-attachments/assets/b4ef0b35-3d1b-4f6e-a761-8a70e08584c3" />
 
