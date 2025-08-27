@@ -220,6 +220,10 @@ class LDPCAttackModel:
         x_ext_template[k_pos] = 0  # Clear Alice's real info bits
         y_ext_template[k_pos] = 0  # Clear Bob's real info bits
 
+        x_ext_template[p_pos] = 0  # Clear Alice's puncture values
+        y_ext_template[p_pos] = 0  # Clear Bob's pucnture values
+
+
         self.eve_observations = {
             'syndrome_alice': s_x,
             'syndrome_size': len(s_x),
