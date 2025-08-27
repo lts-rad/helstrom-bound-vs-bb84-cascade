@@ -126,7 +126,7 @@ So if Bob and Alice set their tolerable QBER above ⅔ * HBER, Eve can intercept
 
 It is worth noting that Eve can also reduce her sampling rate to further reduce Alice & Bob’s QBER. If the QBER tolerance on the check bits were 5% then Eve could adjust to sampling 80% of the time (0.092*⅔ * 0.80 = 0.05 QBER) 
 
-## Attack Results 
+## Attack Results Against Cascade
 
 **constraint solver simulation**
 <img width="1483" height="992" alt="image" src="https://github.com/user-attachments/assets/acec0f48-59fb-4985-85c3-219d9f904837" />
@@ -145,3 +145,8 @@ git submodule update --init --recursive
 # run the sims
 PYTHONPATH=$PWD/cascade-python python3 plot_*py
 ```
+
+## Attack Results Against adapative LDPC Scheme
+
+See ldpc/, Eve is able to get 100% recovery at ~6% QBER
+
