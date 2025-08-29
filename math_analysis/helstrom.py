@@ -1,6 +1,6 @@
 #Helstrom Bound POVM Calculations for 4-QPSK
 
-#Calculation taken from https://journals.aps.org/prxquantum/pdf/10.1103/PRXQuantum.2.020305
+#Calculation taken from  https://www.nature.com/articles/s41598-019-55589-7 equations 54, 56 for N=4
 
 import numpy as np
 def helstrom_bound_4psk(alpha_squared):
@@ -9,7 +9,7 @@ def helstrom_bound_4psk(alpha_squared):
   The Helstrom bound gives the minimum average probability of error
   for discriminating between a set of quantum states. For N-PSK
   with equal prior probabilities, it's given by:
-  P(Hel) = 1 - (1/N) * Σ[sqrt(h_p)] for p=1 to N
+  P(Hel) = 1 - (1/N^2) * Σ[sqrt(h_p)]^2 for p=1 to N
   where h_p are the eigenvalues of a related Gram matrix.
   For 4-PSK (N=4), the eigenvalues h_p are given by:
   h₁ = 2 * exp(-α²) * (cosh(α²) + cos(α²))
