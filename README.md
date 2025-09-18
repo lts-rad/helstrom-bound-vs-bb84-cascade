@@ -20,7 +20,7 @@ We will use a simplified model with the following parameters:
 - [Simple Proof of Security of the BB84 Quantum Key Distribution Protocol](https://arxiv.org/abs/quant-ph/0003004)
 - [The Security of Practical Quantum Key Distribution](https://arxiv.org/abs/0802.4155)
 - [Implementation Attacks against QKD Systems](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/QKD-Systems/QKD-Systems.pdf)
-
+- [Quantum State Discrimination](https://arxiv.org/abs/0810.1970)
 
 ## Prepare & Measure BB84 up to check bits
 
