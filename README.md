@@ -15,6 +15,12 @@ We will use a simplified model with the following parameters:
 - Alice and Bob use secure random number sources 
 - Alice and Bob’s classical channel is authenticated. While it is fully visible to Eve, it is not malleable to Eve and she can not recover the authentication keys to manipulate the classical channel.
 
+### Background Literature
+[Original BB84 Publication](https://arxiv.org/abs/2003.06557) 
+[Simple Proof of Security of the BB84 Quantum Key Distribution Protocol](https://arxiv.org/abs/quant-ph/0003004)
+[The Security of Practical Quantum Key Distribution](https://arxiv.org/abs/0802.4155)
+[Implementation Attacks against QKD Systems](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/QKD-Systems/QKD-Systems.pdf)
+
 
 ## Prepare & Measure BB84 up to check bits
 
