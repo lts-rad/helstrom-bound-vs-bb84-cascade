@@ -4,7 +4,7 @@ This repository accompanies the work presented at SPIE Photonics (https://spie.o
 
 ## Attack Concept
 
-This differs from the textbook Intercept & Resend attack in that Eve does not 'assume' a basis, and instead performs a POVM measure.  
+This differs from the textbook Intercept & Resend attack in that Eve does not 'assume' a basis, and instead performs a min-error POVM (see https://arxiv.org/abs/0810.1970).   
 
 The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employ phase randomization.
 
