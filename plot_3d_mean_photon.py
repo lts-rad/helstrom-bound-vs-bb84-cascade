@@ -53,6 +53,25 @@ def maximum_intercept_fraction(
     return min(1.0, qber_limit / full_qber)
 
 
+def recovery_completion(
+    recovery_accuracy: float, intercept_fraction: float
+) -> float:
+    """Normalize candidate accuracy from random guessing to exact recovery.
+
+    A candidate with 50% bit accuracy contains no demonstrated recovery beyond
+    chance and maps to 0%. An exact candidate maps to 100%. At zero
+    interception the completion is exactly zero, independent of finite-sample
+    fluctuations around 50% candidate accuracy.
+    """
+    if not 0.0 <= recovery_accuracy <= 1.0:
+        raise ValueError("recovery_accuracy must be between 0 and 1")
+    if not 0.0 <= intercept_fraction <= 1.0:
+        raise ValueError("intercept_fraction must be between 0 and 1")
+    if intercept_fraction == 0.0:
+        return 0.0
+    return min(1.0, max(0.0, 2.0 * recovery_accuracy - 1.0))
+
+
 def run_recovery_attack(
     raw_size: int,
     mean_photon_number: float,
@@ -180,7 +199,7 @@ def aggregate_recovery(rows):
     intercept_fractions = sorted(
         {float(row["intercept_fraction"]) for row in rows}
     )
-    recovery = np.empty(
+    completion = np.empty(
         (len(intercept_fractions), len(mean_photon_numbers)), dtype=float
     )
     sifted_sizes = []
@@ -194,20 +213,25 @@ def aggregate_recovery(rows):
             ]
             if not selected:
                 raise ValueError("recovery sweep is not a complete grid")
-            recovery[intercept_index, mu_index] = np.mean(
-                [row["recovery_accuracy"] for row in selected]
+            completion[intercept_index, mu_index] = np.mean(
+                [
+                    recovery_completion(
+                        row["recovery_accuracy"], row["intercept_fraction"]
+                    )
+                    for row in selected
+                ]
             )
             sifted_sizes.extend(row["sifted_size"] for row in selected)
     return (
         np.asarray(mean_photon_numbers),
         np.asarray(intercept_fractions),
-        recovery,
+        completion,
         float(np.mean(sifted_sizes)),
     )
 
 
 def plot_operating_region(rows, qber_limit: float, output_path: Path):
-    mean_photon_numbers, intercept_fractions, recovery, mean_sifted = (
+    mean_photon_numbers, intercept_fractions, completion, mean_sifted = (
         aggregate_recovery(rows)
     )
     mu_grid, intercept_grid = np.meshgrid(
@@ -220,9 +244,10 @@ def plot_operating_region(rows, qber_limit: float, output_path: Path):
     qber_percent = effective_qber * 100.0
     intercept_percent = intercept_grid * 100.0
 
-    recovery_percent = recovery * 100.0
-    recovery_norm = colors.Normalize(vmin=50.0, vmax=100.0)
-    recovery_colors = cm.viridis(recovery_norm(recovery_percent))
+    completion_percent = completion * 100.0
+    completion_norm = colors.Normalize(vmin=0.0, vmax=100.0)
+    completion_cmap = cm.viridis_r
+    completion_colors = completion_cmap(completion_norm(completion_percent))
     safe_qber = np.where(effective_qber <= qber_limit, qber_percent, np.nan)
     unsafe_qber = np.where(effective_qber > qber_limit, qber_percent, np.nan)
 
@@ -232,7 +257,7 @@ def plot_operating_region(rows, qber_limit: float, output_path: Path):
         mu_grid,
         intercept_percent,
         safe_qber,
-        facecolors=recovery_colors,
+        facecolors=completion_colors,
         edgecolor="0.35",
         linewidth=0.35,
         alpha=0.9,
@@ -243,9 +268,9 @@ def plot_operating_region(rows, qber_limit: float, output_path: Path):
         mu_grid[effective_qber <= qber_limit],
         intercept_percent[effective_qber <= qber_limit],
         qber_percent[effective_qber <= qber_limit],
-        c=recovery_percent[effective_qber <= qber_limit],
-        cmap=cm.viridis,
-        norm=recovery_norm,
+        c=completion_percent[effective_qber <= qber_limit],
+        cmap=completion_cmap,
+        norm=completion_norm,
         s=24,
         edgecolors="black",
         linewidths=0.25,
@@ -308,12 +333,14 @@ def plot_operating_region(rows, qber_limit: float, output_path: Path):
     ax.view_init(elev=26, azim=-55)
 
     colorbar = fig.colorbar(
-        cm.ScalarMappable(norm=recovery_norm, cmap=cm.viridis),
+        cm.ScalarMappable(norm=completion_norm, cmap=completion_cmap),
         ax=ax,
         shrink=0.68,
         pad=0.1,
     )
-    colorbar.set_label("Recovered sifted-key bits after hybrid solve (%)")
+    colorbar.set_label(
+        "Recovery completion (0% = random candidate, 100% = exact key)"
+    )
 
     legend_handles = [
         Line2D(

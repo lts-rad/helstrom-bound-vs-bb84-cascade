@@ -6,6 +6,7 @@ from hybrid_constraint_solver import HybridConstraintSolver
 from plot_3d_mean_photon import (
     expected_attack_rates,
     maximum_intercept_fraction,
+    recovery_completion,
     run_recovery_attack,
 )
 from qpsk_srm_attack import (
@@ -105,6 +106,13 @@ class PartialInterceptOperatingRegionTests(unittest.TestCase):
         self.assertTrue(row["optimal"])
         self.assertGreaterEqual(row["recovery_accuracy"], 0.0)
         self.assertLessEqual(row["recovery_accuracy"], 1.0)
+
+    def test_completion_removes_random_guessing_baseline(self):
+        self.assertEqual(recovery_completion(0.5, 0.0), 0.0)
+        self.assertEqual(recovery_completion(0.9, 0.0), 0.0)
+        self.assertEqual(recovery_completion(0.5, 0.5), 0.0)
+        self.assertEqual(recovery_completion(0.75, 0.5), 0.5)
+        self.assertEqual(recovery_completion(1.0, 0.5), 1.0)
 
 
 if __name__ == "__main__":
