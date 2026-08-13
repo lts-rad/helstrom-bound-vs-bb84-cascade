@@ -17,6 +17,7 @@ Since this work was done the attack speed has been improved, where the constrain
 being limited to about 16k sifts, the demo can now run up to a million on a consumer laptop.
 
 Subsequently, another attack has also been released against cascade (https://arxiv.org/abs/2603.29669).
+ "The Manipulate-and-Observe Attack on Quantum Key Distribution" targets cleverly disturbing reconciliation for recovery.
 
 
 ### Assumptions
@@ -155,7 +156,7 @@ It is worth noting that Eve can also reduce her sampling rate to further reduce 
 ## Attack Results Against Cascade
 
 **constraint solver simulation**
-<img width="1483" height="992" alt="image" src="https://github.com/user-attachments/assets/acec0f48-59fb-4985-85c3-219d9f904837" />
+<img width="1499" height="1002" alt="image" src="https://github.com/user-attachments/assets/b3039b28-568a-4639-836d-8105f7323098" />
 
 ## Using the code
 
