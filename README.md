@@ -8,7 +8,34 @@ This differs from the textbook Intercept & Resend attack in that Eve does not 'a
 
 The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employ phase randomization.
 
-In particular the POVM needs coherences to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill (https://arxiv.org/pdf/quant-ph/0504209)
+In particular the POVM needs coherences in photon number to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill (https://arxiv.org/pdf/quant-ph/0504209) where no security is attainable above 0.5 for QPSK, regardless of the reconciliation efficiency. See figure below
+
+<img width="685" height="352" alt="image" src="https://github.com/user-attachments/assets/6c3d886b-e004-4a9f-9a44-c1187d46e858" />
+
+
+### POVM Attack Scaling Overview
+
+<img width="761" height="440" alt="image" src="https://github.com/user-attachments/assets/b512f2f6-75bd-4dec-85eb-65261c62804d" />
+
+Notice that the attack achieves a measured QBER notably lower than the Helstrom bound minimum error, even though Eve resends every packet.
+
+<img width="644" height="363" alt="image" src="https://github.com/user-attachments/assets/8038132d-66f8-4dbc-9f7b-d012cd12ca0f" />
+
+In the figure above it's easy to see that polarization encoding  (dashed lines) has more basis overlap than phase encoding (solid lines).
+This is intuitive as the angular separation between the encodings varies from 45 for polarization to 90 degrees for typical QPSK phase encoding.
+
+Another aspect to understand is that cross-basis overlap reduces as mean photon number increases, making the states easier to discriminate and having lower minimum error.
+The attack operates somewhere between the yellow and red dashed lines above. 
+
+<img width="389" height="192" alt="image" src="https://github.com/user-attachments/assets/71b17c12-ea28-4ea2-8524-2f837ea1a100" />
+The cross basis overlap does vary based on mean photon number as seen in the table above
+
+<img width="1019" height="657" alt="image" src="https://github.com/user-attachments/assets/cd51d343-122c-401a-ba8b-cfbfe997fe9a" />
+
+
+And the above 3D Plot shows how the attack operates at various mean photon numbers and interception rates.
+For QPSK the idealized attack induces a QBER above 11% at about 0.65 mean photon number. 
+
 
 
 ### Updates
