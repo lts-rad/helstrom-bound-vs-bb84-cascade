@@ -6,8 +6,13 @@ from hybrid_constraint_solver import HybridConstraintSolver
 from plot_3d_mean_photon import (
     expected_attack_rates,
     maximum_intercept_fraction,
+    run_recovery_attack,
 )
-from qpsk_srm_attack import MeanPhotonAttackModel, srm_probabilities
+from qpsk_srm_attack import (
+    MeanPhotonAttackModel,
+    PartialInterceptMeanPhotonAttackModel,
+    srm_probabilities,
+)
 
 
 class SRMProbabilityTests(unittest.TestCase):
@@ -84,6 +89,22 @@ class PartialInterceptOperatingRegionTests(unittest.TestCase):
             expected_attack_rates(1.0, high_mu_fraction)["qber_effective"],
             0.11,
         )
+
+    def test_zero_interception_leaves_bob_clean_and_eve_uninformed(self):
+        model = PartialInterceptMeanPhotonAttackModel(
+            4096, seed=42, mean_photon_number=0.7, intercept_fraction=0.0
+        )
+        self.assertEqual(model.bob_bits, model.alice_bits)
+        self.assertFalse(any(model.eve_had_correct_basis))
+        self.assertEqual(model.expected_qber(), 0.0)
+        self.assertEqual(model.realized_sifted_intercept_fraction, 0.0)
+
+    def test_recovery_metric_comes_from_real_hybrid_solution(self):
+        row = run_recovery_attack(2048, 0.7, 0.5, seed=42)
+        self.assertGreater(row["constraints"], 0)
+        self.assertTrue(row["optimal"])
+        self.assertGreaterEqual(row["recovery_accuracy"], 0.0)
+        self.assertLessEqual(row["recovery_accuracy"], 1.0)
 
 
 if __name__ == "__main__":

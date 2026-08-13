@@ -131,3 +131,71 @@ class MeanPhotonAttackModel(QuadratureAttackModel):
             name: self.eve_outcome_class.count(name) / total
             for name in ("correct", "cross", "same")
         }
+
+
+class PartialInterceptMeanPhotonAttackModel(MeanPhotonAttackModel):
+    """Variable-μ attack in which Eve intercepts only a signal fraction."""
+
+    def __init__(
+        self,
+        raw_key_size: int,
+        seed: int,
+        mean_photon_number: float,
+        intercept_fraction: float,
+    ):
+        if not 0.0 <= intercept_fraction <= 1.0:
+            raise ValueError("intercept_fraction must be between 0 and 1")
+
+        super().__init__(raw_key_size, seed, mean_photon_number)
+        self.intercept_fraction = float(intercept_fraction)
+
+        if intercept_fraction == 0.0:
+            intercepted_raw = np.zeros(raw_key_size, dtype=bool)
+        elif intercept_fraction == 1.0:
+            intercepted_raw = np.ones(raw_key_size, dtype=bool)
+        else:
+            # Keep the underlying SRM outcome realization fixed when comparing
+            # interception fractions for the same seed and mean photon number.
+            rng = np.random.default_rng(seed + 1_000_003)
+            intercepted_raw = rng.random(raw_key_size) < intercept_fraction
+
+        self.eve_intercepted_raw = intercepted_raw.tolist()
+        self.eve_intercepted_sifted = []
+        for sifted_index, raw_index in enumerate(self.sifted_indices):
+            intercepted = bool(intercepted_raw[raw_index])
+            self.eve_intercepted_sifted.append(intercepted)
+            if intercepted:
+                continue
+
+            # Unsampled signals reach Bob unchanged. Eve knows only that she
+            # did not measure the position, so it is marked unreliable.
+            alice_bit = self.alice_bits[sifted_index]
+            self.bob_bits[sifted_index] = alice_bit
+            self.bob_bits_raw[raw_index] = alice_bit
+            self.eve_measurements[sifted_index] = 0
+            self.eve_measurements_raw[raw_index] = 0
+            self.eve_had_correct_basis[sifted_index] = False
+            self.eve_had_correct_basis_raw[raw_index] = False
+            self.eve_outcome_class[sifted_index] = "unintercepted"
+            self.eve_outcome_class_raw[raw_index] = "unintercepted"
+
+        self.bob_key._bits = self.bob_bits.copy()
+        self.realized_sifted_intercept_fraction = (
+            sum(self.eve_intercepted_sifted) / self.sifted_key_size
+            if self.sifted_key_size
+            else 0.0
+        )
+
+    def expected_hber(self) -> float:
+        return self.intercept_fraction * self.srm.hber
+
+    def expected_qber(self) -> float:
+        return self.intercept_fraction * self.srm.qber
+
+    def calculate_hber(self) -> float:
+        if not self.eve_outcome_class:
+            return 0.0
+        errors = sum(
+            value in ("cross", "same") for value in self.eve_outcome_class
+        )
+        return errors / len(self.eve_outcome_class)
