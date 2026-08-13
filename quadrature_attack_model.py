@@ -13,6 +13,15 @@ Key insights:
 
 import numpy as np
 import random
+import sys
+from pathlib import Path
+
+# Make the repository's CASCADE submodule importable for direct entry points
+# such as ``python3 plot_quadrature_attack.py``.
+_CASCADE_SOURCE = Path(__file__).resolve().parent / "cascade-python"
+if _CASCADE_SOURCE.is_dir() and str(_CASCADE_SOURCE) not in sys.path:
+    sys.path.insert(0, str(_CASCADE_SOURCE))
+
 from cascade.key import Key
 from cascade.mock_classical_channel import MockClassicalChannel
 from cascade.reconciliation import Reconciliation
