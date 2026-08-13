@@ -1,5 +1,7 @@
 """Hybrid affine/Boolean decoder for the BB84 CASCADE transcript.
 
+Note: this was generated with GLM 5.2 to improve the solver previously in the `old` branch.
+
 The public CASCADE parity answers are exact affine equations over GF(2).  Eve's
 measurement quality is not another GF(2) equation: it is a likelihood model.
 This module first eliminates the affine core, projects out the positions whose
