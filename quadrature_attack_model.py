@@ -131,6 +131,10 @@ class QuadratureAttackModel:
         qber = errors / self.sifted_key_size if self.sifted_key_size > 0 else 0
         return qber
 
+    def expected_qber(self):
+        """Expected post-sifting QBER used to configure CASCADE."""
+        return ERATE / 2
+
     def verify_eve_bob_correlation(self):
         """Verify that Eve knows Bob's bits when basis was correct."""
         correlations = []
@@ -173,10 +177,9 @@ class QuadratureAttackModel:
                 return alice_parities
 
         channel = ConstraintCollector(self.alice_key, constraints)
-        # Use the expected QBER for CASCADE (2*ERATE/3)
-        #expected_qber = ERATE / 2
-        expected_qber = ERATE / 2
-        reconciliation = Reconciliation("option4", channel, self.bob_key, expected_qber)
+        reconciliation = Reconciliation(
+            "option4", channel, self.bob_key, self.expected_qber()
+        )
 
         try:
             reconciliation.reconcile()
