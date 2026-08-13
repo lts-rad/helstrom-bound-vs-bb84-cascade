@@ -1,112 +1,9 @@
-"""
-Using chunked solver for larger keys for performance, not ideal, but runs
-"""
+"""Run and plot the hybrid CASCADE constraint-solving attack."""
 
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+from hybrid_constraint_solver import HybridConstraintSolver, score_result
 from quadrature_attack_model import QuadratureAttackModel, ERATE
-from chunked_solver import ChunkedSolver
-from chunked_optimized import OptimizedChunkedSolver
-from z3 import *
-
-
-class CorrectedChunkedSolver:
-    """Chunked solver using corrected constraints (Eve's measurements)."""
-
-    def __init__(self, model, constraints, chunk_size=4096, overlap=512):
-        self.model = model
-        self.constraints = constraints
-        self.chunk_size = chunk_size
-        self.overlap = overlap
-        self.key_size = model.sifted_key_size
-
-        # Eve's knowledge from measurements
-        self.eve_knows_bob_indices = set(i for i in range(self.key_size)
-                                         if model.eve_had_correct_basis[i])
-        self.eve_bob_values = {i: model.eve_measurements[i] for i in self.eve_knows_bob_indices}
-
-    def solve_chunk(self, start, end):
-        """Solve a chunk using optimization with corrected constraints."""
-        chunk_size = end - start
-
-        # Get constraints for this chunk
-        chunk_constraints = []
-        for c in self.constraints:
-            indices = c['indices']
-            # Include if any index is in chunk
-            if any(start <= idx < end for idx in indices):
-                # Adjust indices to be relative to chunk
-                adjusted_indices = [idx - start for idx in indices if start <= idx < end]
-                if adjusted_indices:
-                    chunk_constraints.append({
-                        'indices': adjusted_indices,
-                        'alice_parity': c['alice_parity'],  # Eve observes Alice's parity sent to Bob
-                        'original_indices': indices
-                    })
-
-        # Create optimizer
-        optimizer = Optimize()
-        optimizer.set('timeout', 5000)
-
-        # Variables for this chunk
-        alice_vars = [Bool(f'alice_{i}') for i in range(chunk_size)]
-
-        # Add CASCADE constraints
-        for c in chunk_constraints:
-            if len(c['indices']) == len(c['original_indices']):
-                # All indices in chunk
-                indices = c['indices']
-                if len(indices) == 1:
-                    optimizer.add(alice_vars[indices[0]] == (c['alice_parity'] == 1))
-                else:
-                    xor_expr = alice_vars[indices[0]]
-                    for idx in indices[1:]:
-                        if 0 <= idx < chunk_size:
-                            xor_expr = Xor(xor_expr, alice_vars[idx])
-                    optimizer.add(xor_expr == (c['alice_parity'] == 1))
-
-        # Maximize agreement with Eve's knowledge for this chunk
-        eve_indices_in_chunk = [i - start for i in range(start, end) if i in self.eve_knows_bob_indices]
-        if eve_indices_in_chunk:
-            agreement = Sum([
-                If(alice_vars[i] == (self.eve_bob_values[i + start] == 1), 1, 0)
-                for i in eve_indices_in_chunk
-            ])
-            optimizer.maximize(agreement)
-
-        # Solve
-        result = optimizer.check()
-
-        if result == sat:
-            model_solution = optimizer.model()
-            chunk_solution = []
-            for i in range(chunk_size):
-                val = model_solution.eval(alice_vars[i])
-                if val is None:
-                    # Use Eve's measurement if available
-                    global_idx = start + i
-                    if global_idx in self.eve_bob_values:
-                        chunk_solution.append(self.eve_bob_values[global_idx])
-                    else:
-                        chunk_solution.append(0)
-                else:
-                    chunk_solution.append(1 if is_true(val) else 0)
-            return chunk_solution
-        else:
-            # Failed - use Eve's measurements
-            return [self.eve_bob_values.get(start + i, 0) for i in range(chunk_size)]
-
-    def solve(self):
-        """Solve all public parities together; do not discard cross-chunk rows."""
-        from hybrid_constraint_solver import HybridConstraintSolver, score_result
-
-        result = HybridConstraintSolver.from_model(self.model, self.constraints).solve()
-        self.last_solver_result = result
-        score = score_result(self.model, result)
-        print(f"    rank={result.rank}, projected={result.projected_equations}, "
-              f"violations={result.affine_violations}, time={result.total_seconds:.3f}s")
-        return score["accuracy"]
 
 
 def test_and_plot():
@@ -156,16 +53,14 @@ def test_and_plot():
                 # Run CASCADE
                 constraints = model.run_cascade()
 
-                # Use optimized solver for smaller keys, chunked for larger
-                start_time = time.time()
-                if raw_size <= 4096:
-                    # Use optimization directly for smaller keys
-                    solver = CorrectedChunkedSolver(model, constraints, chunk_size=2048, overlap=256)
-                else:
-                    # Use chunked solver for larger keys
-                    solver = CorrectedChunkedSolver(model, constraints, chunk_size=4096, overlap=512)
-                accuracy = solver.solve()
-                solve_time = time.time() - start_time
+                result = HybridConstraintSolver.from_model(model, constraints).solve()
+                score = score_result(model, result)
+                accuracy = score["accuracy"]
+                solve_time = result.total_seconds
+
+                print(f" rank={result.rank}, projected={result.projected_equations}, "
+                      f"violations={result.affine_violations}, "
+                      f"time={result.total_seconds:.3f}s", end="")
 
                 print(f" Accuracy: {accuracy:.4f}")
 

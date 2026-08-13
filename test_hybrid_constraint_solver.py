@@ -4,7 +4,6 @@ import unittest
 from hybrid_constraint_solver import (
     HybridConstraintSolver,
     count_affine_violations,
-    solve_information_set_legacy,
 )
 
 
@@ -37,18 +36,13 @@ class HybridConstraintSolverUnitTests(unittest.TestCase):
         self.assertEqual(result.reliable_errors, min(cost for cost, _ in feasible))
         self.assertEqual(result.affine_violations, 0)
 
-    def test_improves_on_gf2_information_set_counterexample(self):
-        # The old heuristic sets free e2=0 and forces e0=e1=1 (cost 2).
-        # The ML solution sets e2=1 and e0=e1=0 (cost 1).
+    def test_finds_minimum_weight_solution(self):
         measurements = [0, 0, 0]
         reliable = [True, True, True]
         constraints = [constraint([0, 2], 1), constraint([1, 2], 1)]
 
-        legacy = solve_information_set_legacy(measurements, reliable, constraints)
         result = HybridConstraintSolver(measurements, reliable, constraints).solve()
 
-        legacy_cost = sum(left != right for left, right in zip(legacy, measurements))
-        self.assertEqual(legacy_cost, 2)
         self.assertEqual(result.reliable_errors, 1)
         self.assertEqual(result.solution, (0, 0, 1))
 
@@ -96,29 +90,24 @@ class HybridConstraintSolverUnitTests(unittest.TestCase):
         self.assertEqual(solver.solve().affine_violations, 0)
 
 
-class RepresentativeCascadeComparisonTests(unittest.TestCase):
-    def test_new_solver_dominates_old_information_set_on_seeded_instances(self):
+class RepresentativeCascadeTests(unittest.TestCase):
+    def test_seeded_instances_are_optimal_and_feasible(self):
         from quadrature_attack_model import QuadratureAttackModel
 
         for seed in (42, 43, 44):
             with self.subTest(seed=seed):
                 model = QuadratureAttackModel(1024, seed)
                 constraints = model.run_cascade()
-                legacy = solve_information_set_legacy(
-                    model.eve_measurements,
-                    model.eve_had_correct_basis,
-                    constraints,
-                )
                 result = HybridConstraintSolver.from_model(model, constraints).solve()
 
-                self.assertEqual(count_affine_violations(legacy, constraints), 0)
+                self.assertTrue(result.optimal)
                 self.assertEqual(result.affine_violations, 0)
-                legacy_cost = sum(
-                    legacy[index] != model.eve_measurements[index]
+                measured_cost = sum(
+                    result.solution[index] != model.eve_measurements[index]
                     for index, reliable in enumerate(model.eve_had_correct_basis)
                     if reliable
                 )
-                self.assertLessEqual(result.reliable_errors, legacy_cost)
+                self.assertEqual(result.reliable_errors, measured_cost)
 
 
 if __name__ == "__main__":

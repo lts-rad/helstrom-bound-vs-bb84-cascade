@@ -13,8 +13,6 @@ Key insights:
 
 import numpy as np
 import random
-import time
-from z3 import *
 from cascade.key import Key
 from cascade.mock_classical_channel import MockClassicalChannel
 from cascade.reconciliation import Reconciliation

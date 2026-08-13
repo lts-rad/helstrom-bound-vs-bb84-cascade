@@ -470,9 +470,8 @@ class HybridConstraintSolver:
             reliable_mask,
         )
 
-        # The information-set assignment is a valid upper bound: all free errors
-        # are zero, and RREF determines the pivots.  Unlike the old solver, we now
-        # prove or improve that bound instead of assuming it is maximum likelihood.
+        # The RREF particular assignment is a valid upper bound: all free errors
+        # are zero and the pivots are determined. Prove or improve that bound.
         candidate_error_mask = reduction.particular_error_mask()
         candidate_weight = (candidate_error_mask & reliable_mask).bit_count()
 
@@ -526,28 +525,3 @@ class HybridConstraintSolver:
             total_seconds=search_finished - started,
             statistics=residual.statistics,
         )
-
-
-def solve_information_set_legacy(
-    eve_measurements: Sequence[int],
-    reliable_positions: Sequence[bool],
-    constraints: Sequence[Constraint],
-) -> tuple[int, ...]:
-    """The previous GF(2)-only heuristic, retained for regression comparison."""
-    unreliable = [
-        index
-        for index, value in enumerate(reliable_positions)
-        if not value
-    ]
-    reliable = [index for index, value in enumerate(reliable_positions) if value]
-    reduction = reduce_affine_system(
-        len(eve_measurements),
-        constraints,
-        base_bits=eve_measurements,
-        column_order=unreliable + reliable,
-    )
-    if reduction.inconsistent:
-        raise ValueError("public CASCADE parity transcript is inconsistent")
-    error_mask = reduction.particular_error_mask()
-    solution_mask = _mask_from_bits(eve_measurements) ^ error_mask
-    return tuple((solution_mask >> index) & 1 for index in range(len(eve_measurements)))

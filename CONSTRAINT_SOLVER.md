@@ -37,22 +37,6 @@ The measurement model is different:
   pseudo-Boolean constraint.  The previous solver added two such constraints
   for the wrong-basis subset and the full key.  Both embed unavailable Bob bits.
 
-## Where the old encodings lose strength
-
-The monolithic Z3 encoding mixed long left-deep XOR expressions with three
-pseudo-Boolean ranges.  It did no rank reduction, retained dependent parity
-rows, and used statistical expectations as hard facts.  A hard interval can
-also reject the true key on an ordinary finite random sample.
-
-The chunked optimizer drops every parity row crossing a chunk boundary, solves
-overlaps independently, and merges potentially inconsistent models.  Its local
-search is not guaranteed to restore all public parities.
-
-The GF(2)-only information-set decoder does eliminate the affine system, but it
-sets every free bit to Eve's measurement and forces the pivots.  That is merely
-a feasible coset representative: changing one free bit can repair several
-pivots and produce a more likely solution.
-
 ## Hybrid algorithm
 
 1. Express Alice bits as errors relative to Eve's known measurements.
@@ -61,7 +45,7 @@ pivots and produce a more likely solution.
    contradictions, computes its rank, and existentially eliminates the uniform
    positions.
 3. The remaining projected rows are XOR equations only on reliable error bits.
-4. Use the old information-set result as a valid upper bound.
+4. Use the RREF particular solution as a valid cardinality upper bound.
 5. Count independent unit rows that force reliable errors. When this lower
    bound equals the feasible upper bound, optimality is certified without SAT.
 6. Otherwise, ask Z3 incrementally whether a lower-cardinality reliable error
