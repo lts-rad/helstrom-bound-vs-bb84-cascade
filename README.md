@@ -6,7 +6,7 @@ This repository accompanies the work presented at SPIE Photonics (https://spie.o
 
 This differs from the textbook Intercept & Resend attack in that Eve does not 'assume' a basis, and instead performs a POVM measure.  
 
-The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employe phase randomization.
+The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employ phase randomization.
 
 In particular the POVM needs coherences to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill (https://arxiv.org/pdf/quant-ph/0504209)
 
