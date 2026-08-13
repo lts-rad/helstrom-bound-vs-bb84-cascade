@@ -6,7 +6,7 @@ We will use a simplified model with the following parameters:
 - Eve must obey the laws of quantum mechanics
 - Eve must compute in polynomial time and memory (and so must Alice and Bob for error correction)
 - We assume no side channels or imperfections in Alice and Bob’s equipment
-- Alice never sends more or less than 1.0 photon (with some physical implementation), so PNS (photon number splitting attacks) do not apply.
+- Alice never ~ amplitude 1.0 photons as weak coherent pulses. this attack differs than PNS though as it uses generalized measurement
 - For simplicity, we assume a zero noise channel between Alice and Eve, and a zero noise channel between Eve and Bob. 
 - Under normal conditions when Eve is not present, Alice and Bob expect and accept an error rate threshold. 
 - Alice and Bob perform one-way 4-state BB84 with prepare & measure
@@ -15,6 +15,12 @@ We will use a simplified model with the following parameters:
 - Alice and Bob use secure random number sources 
 - Alice and Bob’s classical channel is authenticated. While it is fully visible to Eve, it is not malleable to Eve and she can not recover the authentication keys to manipulate the classical channel.
 
+### Background Literature
+- [Original BB84 Publication](https://arxiv.org/abs/2003.06557) 
+- [Simple Proof of Security of the BB84 Quantum Key Distribution Protocol](https://arxiv.org/abs/quant-ph/0003004)
+- [The Security of Practical Quantum Key Distribution](https://arxiv.org/abs/0802.4155)
+- [Implementation Attacks against QKD Systems](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/QKD-Systems/QKD-Systems.pdf)
+- [Quantum State Discrimination](https://arxiv.org/abs/0810.1970)
 
 ## Prepare & Measure BB84 up to check bits
 
