@@ -4,16 +4,20 @@ This repository accompanies the work presented at SPIE Photonics (https://spie.o
 
 ## Attack Concept
 
-This differs from the textbook Intercept & Resend attack in that Eve does not 'assume' a basis, and instead performs a min-error POVM (see https://arxiv.org/abs/0810.1970).   
+This is a bb84 cascade attack simulation which demonstrates full recovery of 200k sifted bits in minutes with smaller block sizes completing in seconds. The encoding being explored here is phase-encoded qubits.  
+This differs from the textbook Intercept & Resend attack in that Eve does not 'assume' a basis, and instead performs a min-error POVM at the helstrom bound (see https://arxiv.org/abs/0810.1970).   
+
+Another aspect this work explores is how Cascade behaves under attack. Most Cascade literature focuses on what the reconciliation leaks without considering how much partial information Eve may have already, and that is what this work focuses on simulating. While the entropy analysis shows that the protocol is insecure, the attack methodology to fully recover the rest of the bits in this work is a new contribution that resolves that there is no computational barrier or otherwise to key recovery under these conditions, and that the announcement phase in bb84 is particularly beneficial to an attacker running generalized measurement.
+
+
+
+### POVM Attack Scaling Overview
 
 The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employ phase randomization.
 
 In particular the POVM needs coherences in photon number to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill  [https://arxiv.org/pdf/quant-ph/0610203](https://arxiv.org/pdf/quant-ph/0610203) where no security is attainable above 0.5 for QPSK, regardless of the reconciliation efficiency. See figure below for how it scales against the toy protocol being considered here, where aspects like detector efficiency are simplified. 
 
 <img width="685" height="352" alt="image" src="https://github.com/user-attachments/assets/6c3d886b-e004-4a9f-9a44-c1187d46e858" />
-
-
-### POVM Attack Scaling Overview
 
 <img width="761" height="440" alt="image" src="https://github.com/user-attachments/assets/b512f2f6-75bd-4dec-85eb-65261c62804d" />
 
