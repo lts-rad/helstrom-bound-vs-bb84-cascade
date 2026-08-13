@@ -98,31 +98,15 @@ class CorrectedChunkedSolver:
             return [self.eve_bob_values.get(start + i, 0) for i in range(chunk_size)]
 
     def solve(self):
-        """Solve all chunks and combine."""
-        recovered_bits = [0] * self.key_size
+        """Solve all public parities together; do not discard cross-chunk rows."""
+        from hybrid_constraint_solver import HybridConstraintSolver, score_result
 
-        # Process chunks
-        for start in range(0, self.key_size, self.chunk_size - self.overlap):
-            end = min(start + self.chunk_size, self.key_size)
-
-            print(f"    Solving chunk [{start}:{end}]...", end=' ')
-            chunk_solution = self.solve_chunk(start, end)
-
-            # Copy solution to recovered bits
-            for i, bit in enumerate(chunk_solution):
-                if start + i < self.key_size:
-                    recovered_bits[start + i] = bit
-
-            chunk_correct = sum(1 for i in range(len(chunk_solution))
-                              if start + i < self.key_size and
-                              chunk_solution[i] == self.model.alice_bits[start + i])
-            chunk_acc = chunk_correct / len(chunk_solution) if chunk_solution else 0
-            print(f"accuracy={chunk_acc:.3f}")
-
-        # Calculate overall accuracy
-        correct = sum(1 for i in range(self.key_size)
-                     if recovered_bits[i] == self.model.alice_bits[i])
-        return correct / self.key_size
+        result = HybridConstraintSolver.from_model(self.model, self.constraints).solve()
+        self.last_solver_result = result
+        score = score_result(self.model, result)
+        print(f"    rank={result.rank}, projected={result.projected_equations}, "
+              f"violations={result.affine_violations}, time={result.total_seconds:.3f}s")
+        return score["accuracy"]
 
 
 def test_and_plot():
@@ -409,7 +393,8 @@ def test_and_plot():
     for alpha_sq in photon_numbers:
         erate = helstrom_bound_4psk(alpha_sq)
         # QBER = 2 * ERATE / 3 (from the model)
-        qber = 2 * erate / 3
+        #qber = 2 * erate / 2
+        qber = erate / 2
         erates.append(erate)
         qbers.append(qber)
 
@@ -418,7 +403,8 @@ def test_and_plot():
 
     # Mark our operating point with precise Helstrom bound values
     our_erate = ERATE
-    our_qber = 2 * our_erate / 3
+    #our_qber = 2 * our_erate / 3
+    our_qber = our_erate / 2
     ax.plot(our_qber * 100, our_erate * 100, 'ro', markersize=10)
 
     # Add text annotation for α=1.0 and QBER=6.16%

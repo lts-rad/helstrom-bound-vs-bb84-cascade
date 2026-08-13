@@ -167,7 +167,8 @@ class QuadratureAttackModel:
 
         channel = ConstraintCollector(self.alice_key, constraints)
         # Use the expected QBER for CASCADE (2*ERATE/3)
-        expected_qber = 2 * ERATE / 3
+        #expected_qber = ERATE / 2
+        expected_qber = ERATE / 2
         reconciliation = Reconciliation("option4", channel, self.bob_key, expected_qber)
 
         try:
@@ -203,133 +204,32 @@ class EveQuadratureAttack:
         print(f"  Uncertain about Bob: {len(self.eve_uncertain)}/{self.key_size} ({len(self.eve_uncertain)*100/self.key_size:.1f}%)")
 
     def solve_constraints(self):
-        """
-        Solve for Alice's bits
+        """Decode the public CASCADE transcript without simulator-only Bob bits."""
+        from hybrid_constraint_solver import HybridConstraintSolver, score_result
 
-        Key constraints:
-        1. When Eve had correct basis: Eve_bit = Bob_bit, and ~3.3% differ from Alice
-        2. When Eve had wrong basis: Bob's bit is random, 50% match with Alice
-        3. CASCADE parity constraints
-        4. Overall QBER = 2*ERATE/3
-        """
-
-        start_time = time.time()
-
-        print(f"\n=== SOLVING CONSTRAINTS ===")
+        print("\n=== HYBRID AFFINE / MAXIMUM-LIKELIHOOD SOLVER ===")
         print(f"Key size: {self.key_size} bits")
         print(f"CASCADE constraints: {len(self.constraints)}")
-        print(f"Expected QBER: {2*ERATE/3:.4f} ({2*ERATE/3*100:.2f}%)")
 
-        # Create SAT solver
-        solver = Solver()
-        solver.set('timeout', 30000)  # 30 second timeout
+        solver = HybridConstraintSolver.from_model(self.model, self.constraints)
+        result = solver.solve()
+        score = score_result(self.model, result)
+        self.last_solver_result = result
 
-        # Variables for Alice's bits
-        alice_vars = [Bool(f'alice_{i}') for i in range(self.key_size)]
+        print(f"Affine rank: {result.rank} "
+              f"({result.dependent_rows} dependent transcript rows)")
+        print(f"Residual ML problem: {result.projected_equations} XOR equations over "
+              f"{result.projected_variables} reliable-error variables")
+        print(f"Solver status: {result.status}; Z3 checks: {result.z3_checks}")
+        print(f"CASCADE violations: {result.affine_violations}")
+        print(f"Baseline accuracy: {score['baseline_accuracy']:.4f}")
+        print(f"Hybrid accuracy: {score['accuracy']:.4f}")
+        print(f"Remaining errors: {score['remaining_errors']}")
+        print(f"Solve time: {result.total_seconds:.3f}s")
+        print(f"Conflicts/decisions/propagations: "
+              f"{result.conflicts}/{result.decisions}/{result.propagations}")
 
-        # Add CASCADE parity constraints
-        print("Adding CASCADE constraints...")
-        for c in self.constraints:
-            indices = c['indices']
-            alice_parity = c['alice_parity']
-
-            if len(indices) == 1:
-                solver.add(alice_vars[indices[0]] == (alice_parity == 1))
-            else:
-                xor_expr = alice_vars[indices[0]]
-                for idx in indices[1:]:
-                    xor_expr = Xor(xor_expr, alice_vars[idx])
-                solver.add(xor_expr == (alice_parity == 1))
-
-        # Constraint 1: When Eve had correct basis (IRATE + ERATE/3 of sifted bits)
-        # Eve's bit = Bob's bit, and (ERATE/3)/(IRATE + ERATE/3) differ from Alice
-        if self.eve_knows_bob:
-            errors_correct_basis = Sum([
-                If(alice_vars[i] != (self.model.bob_bits[i] == 1), 1, 0)
-                for i in self.eve_knows_bob
-            ])
-
-            # Expected errors: ERATE/3 portion of correct basis bits
-            expected_errors = int(len(self.eve_knows_bob) * (ERATE/3) / (IRATE + ERATE/3))
-            tolerance = max(2, int(len(self.eve_knows_bob) * 0.02))
-
-            solver.add(errors_correct_basis >= max(0, expected_errors - tolerance))
-            solver.add(errors_correct_basis <= expected_errors + tolerance)
-
-            print(f"  Correct basis constraint: {expected_errors}±{tolerance} errors among {len(self.eve_knows_bob)} bits")
-
-        # Constraint 2: When Eve had wrong basis (2*ERATE/3 of sifted bits)
-        # Bob's bit is random, 50% match with Alice
-        if self.eve_uncertain:
-            errors_wrong_basis = Sum([
-                If(alice_vars[i] != (self.model.bob_bits[i] == 1), 1, 0)
-                for i in self.eve_uncertain
-            ])
-
-            expected_errors = int(len(self.eve_uncertain) * 0.5)
-            tolerance = max(3, int(len(self.eve_uncertain) * 0.15))
-
-            solver.add(errors_wrong_basis >= max(0, expected_errors - tolerance))
-            solver.add(errors_wrong_basis <= expected_errors + tolerance)
-
-            print(f"  Wrong basis constraint: {expected_errors}±{tolerance} errors among {len(self.eve_uncertain)} bits")
-
-        # Constraint 3: Overall QBER = 2*ERATE/3
-        total_errors = Sum([
-            If(alice_vars[i] != (self.model.bob_bits[i] == 1), 1, 0)
-            for i in range(self.key_size)
-        ])
-
-        expected_qber_count = int(self.key_size * 2 * ERATE / 3)
-        qber_tolerance = max(5, int(self.key_size * 0.01))
-
-        solver.add(total_errors >= expected_qber_count - qber_tolerance)
-        solver.add(total_errors <= expected_qber_count + qber_tolerance)
-
-        print(f"  QBER constraint: {expected_qber_count}±{qber_tolerance} total errors")
-
-        # Solve
-        print("\nSolving SAT problem...")
-
-        if solver.check() == sat:
-            print("Solution found!")
-            model = solver.model()
-
-            # Extract solution
-            alice_solution = []
-            for i in range(self.key_size):
-                val = model.eval(alice_vars[i])
-                alice_solution.append(1 if is_true(val) else 0)
-
-            # Calculate accuracy
-            correct = sum(1 for i in range(self.key_size)
-                         if alice_solution[i] == self.model.alice_bits[i])
-            accuracy = correct / self.key_size
-
-            # Baseline accuracy (using Eve's measurements)
-            baseline_correct = sum(1 for i in range(self.key_size)
-                                 if self.model.eve_measurements[i] == self.model.alice_bits[i])
-            baseline_acc = baseline_correct / self.key_size
-
-            solve_time = time.time() - start_time
-
-            print(f"\n=== RESULTS ===")
-            print(f"Baseline accuracy: {baseline_acc:.4f}")
-            print(f"SAT solver accuracy: {accuracy:.4f}")
-            print(f"Improvement: {accuracy - baseline_acc:.4f}")
-            print(f"Bits recovered: {correct}/{self.key_size}")
-            print(f"Remaining errors: {self.key_size - correct}")
-            print(f"Solve time: {solve_time:.3f}s")
-
-            if self.key_size - correct < 128:
-                print("\n⚠️  KEY IS CRYPTOGRAPHICALLY BROKEN!")
-
-            return accuracy, solve_time
-
-        else:
-            print("No solution found!")
-            solve_time = time.time() - start_time
-            return 0.0, solve_time
+        return score["accuracy"], result.total_seconds
 
 
 def test_idea(raw_key_size=2048, seed=42):
@@ -347,7 +247,7 @@ def test_idea(raw_key_size=2048, seed=42):
 
     # Calculate and verify QBER
     qber = model.calculate_qber()
-    expected_qber = 2 * ERATE / 3
+    expected_qber = ERATE / 2
 
     print(f"\nQBER verification:")
     print(f"  Measured QBER: {qber:.4f} ({qber*100:.2f}%)")

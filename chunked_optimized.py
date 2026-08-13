@@ -1,6 +1,7 @@
-"""
-Optimized chunked solver using 4096-bit chunks for high accuracy.
+"""Compatibility wrapper for the hybrid whole-transcript solver.
 
+The legacy chunk helpers remain for experiments, but ``solve()`` keeps every
+cross-chunk parity and delegates to the affine/maximum-likelihood decoder.
 """
 
 import numpy as np
@@ -14,7 +15,7 @@ set_param('parallel.threads.max', 8)  # Use up to 8 threads
 
 
 class OptimizedChunkedSolver:
-    """Chunked solver optimized for high accuracy."""
+    """Backward-compatible entry point for the hybrid solver."""
 
     def __init__(self, model, constraints, chunk_size=4096, overlap_ratio=0.15):
         self.model = model
@@ -30,10 +31,8 @@ class OptimizedChunkedSolver:
         self.eve_knows_bob = set(i for i in range(self.key_size)
                                  if model.eve_had_correct_basis[i])
 
-        print(f"\nOptimized Chunked Solver:")
+        print(f"\nHybrid Constraint Solver (chunked API compatibility):")
         print(f"  Key size: {self.key_size} bits")
-        print(f"  Chunk size: {self.chunk_size} bits")
-        print(f"  Overlap: {self.overlap} bits ({overlap_ratio*100:.0f}%)")
         print(f"  Eve knows Bob: {len(self.eve_knows_bob)} positions")
 
     def create_chunks(self):
@@ -108,15 +107,6 @@ class OptimizedChunkedSolver:
                 if val is not None:
                     solver.add_soft(alice_vars[i] == (val == 1), weight=5)
 
-        # Add error distribution constraint for large chunks
-        if chunk_size >= 1024:
-            errors_in_chunk = Sum([
-                If(alice_vars[i] != (self.model.bob_bits[start + i] == 1), 1, 0)
-                for i in range(chunk_size)
-            ])
-            expected_errors = int(chunk_size * 2 * ERATE / 3)
-            solver.add_soft(errors_in_chunk <= expected_errors + 10, weight=8)
-
         # Solve
         if solver.check() == sat:
             model_solution = solver.model()
@@ -129,8 +119,9 @@ class OptimizedChunkedSolver:
             return chunk_solution
         else:
             print(f"    Failed to solve chunk [{start}:{end}]")
-            # Return Bob's bits as fallback
-            return [self.model.bob_bits[start + i] for i in range(chunk_size)]
+            # Fall back to Eve's own observations. Wrong-basis values are only
+            # random guesses, but unlike Bob's realized outcomes Eve knows them.
+            return [self.model.eve_measurements[start + i] for i in range(chunk_size)]
 
     def merge_chunks(self, chunk_solutions, chunks):
         """Merge chunk solutions, resolving conflicts in overlaps."""
@@ -160,10 +151,11 @@ class OptimizedChunkedSolver:
                         elif confidence[global_idx] < 2:
                             full_solution[global_idx] = bit
 
-        # Fill any remaining None values with Bob's bits
+        # Fill any remaining values with Eve's observations, never Bob's hidden
+        # wrong-basis outcomes.
         for i in range(self.key_size):
             if full_solution[i] is None:
-                full_solution[i] = self.model.bob_bits[i]
+                full_solution[i] = self.model.eve_measurements[i]
 
         return full_solution
 
@@ -235,74 +227,22 @@ class OptimizedChunkedSolver:
         return violations
 
     def solve(self):
-        """Main solving routine using chunking."""
-        start_time = time.time()
+        """Solve the complete transcript with affine preprocessing and residual ML."""
+        from hybrid_constraint_solver import HybridConstraintSolver, score_result
 
-        print("\n=== OPTIMIZED CHUNKED SOLVER ===")
+        print("\n=== HYBRID AFFINE / MAXIMUM-LIKELIHOOD SOLVER ===")
+        solver = HybridConstraintSolver.from_model(self.model, self.constraints)
+        result = solver.solve()
+        score = score_result(self.model, result)
+        self.last_solver_result = result
 
-        # Create chunks
-        chunks = self.create_chunks()
-
-        # Solve each chunk
-        chunk_solutions = []
-        for i, (start, end) in enumerate(chunks):
-            # For overlapping regions, use previous solution as hint
-            initial = None
-            if i > 0 and self.overlap > 0:
-                # Get overlap from previous chunk
-                prev_end = chunks[i-1][1]
-                overlap_start = max(0, prev_end - self.overlap)
-                if start < prev_end:
-                    # Extract overlap solution
-                    initial = [None] * (end - start)
-                    for j in range(start, min(end, prev_end)):
-                        if j - start < len(initial):
-                            initial[j - start] = chunk_solutions[-1][j - chunks[i-1][0]]
-
-            chunk_solution = self.solve_chunk(start, end, initial)
-            chunk_solutions.append(chunk_solution)
-
-        # Merge chunks
-        print("\n  Merging chunks...")
-        full_solution = self.merge_chunks(chunk_solutions, chunks)
-
-        # Count initial violations
-        initial_violations = self.count_violations(full_solution)
-        print(f"  Initial violations: {initial_violations}/{len(self.constraints)}")
-
-        # Heuristic refinement
-        if initial_violations > 0:
-            full_solution = self.heuristic_refinement(full_solution)
-            final_violations = self.count_violations(full_solution)
-            print(f"  Final violations: {final_violations}/{len(self.constraints)}")
-
-        # Calculate accuracy
-        if self.model.alice_bits:
-            correct = sum(1 for i in range(self.key_size)
-                        if full_solution[i] == self.model.alice_bits[i])
-            accuracy = correct / self.key_size
-
-            baseline_correct = sum(1 for i in range(self.key_size)
-                                 if self.model.bob_bits[i] == self.model.alice_bits[i])
-            baseline_acc = baseline_correct / self.key_size
-
-            solve_time = time.time() - start_time
-
-            print(f"\n=== RESULTS ===")
-            print(f"Baseline (Bob=Alice): {baseline_acc:.4f}")
-            print(f"Optimized solver accuracy: {accuracy:.4f}")
-            print(f"Improvement: {accuracy - baseline_acc:.4f}")
-            print(f"Solve time: {solve_time:.2f}s")
-
-            remaining_errors = self.key_size - correct
-            print(f"Remaining errors: {remaining_errors}")
-
-            if remaining_errors < 128:
-                print("⚠️  KEY IS CRYPTOGRAPHICALLY BROKEN!")
-
-            return accuracy
-
-        return 0.0
+        print(f"  Affine rank: {result.rank}; dependent rows: {result.dependent_rows}")
+        print(f"  Projected residual: {result.projected_equations} equations over "
+              f"{result.projected_variables} variables")
+        print(f"  CASCADE violations: {result.affine_violations}")
+        print(f"  Accuracy: {score['accuracy']:.4f}")
+        print(f"  Solve time: {result.total_seconds:.3f}s")
+        return score["accuracy"]
 
 
 def test_scalability(seeds=[42, 43, 44]):
