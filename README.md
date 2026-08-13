@@ -8,7 +8,7 @@ This differs from the textbook Intercept & Resend attack in that Eve does not 'a
 
 The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employ phase randomization.
 
-In particular the POVM needs coherences in photon number to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill (https://arxiv.org/pdf/quant-ph/0504209) where no security is attainable above 0.5 for QPSK, regardless of the reconciliation efficiency. See figure below
+In particular the POVM needs coherences in photon number to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill  [https://arxiv.org/pdf/quant-ph/0610203](https://arxiv.org/pdf/quant-ph/0610203) where no security is attainable above 0.5 for QPSK, regardless of the reconciliation efficiency. See figure below
 
 <img width="685" height="352" alt="image" src="https://github.com/user-attachments/assets/6c3d886b-e004-4a9f-9a44-c1187d46e858" />
 
@@ -47,6 +47,9 @@ being limited to about 16k sifts for full key recovery, the demo can now run up 
 Subsequently, another attack has also been released against cascade (https://arxiv.org/abs/2603.29669).
  "The Manipulate-and-Observe Attack on Quantum Key Distribution" targets cleverly disturbing reconciliation for recovery.
 
+### Real world implementations of BB84 with QPSK
+
+See [Eagle-1](https://www.ses.com/sites/default/files/2024-11/2024-11-11_The-Eagle-1_QKD_protocol.pdf) 
 
 ### Assumptions
 
@@ -70,6 +73,7 @@ We will use a simplified model with the following parameters:
 - [Implementation Attacks against QKD Systems](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/QKD-Systems/QKD-Systems.pdf)
 - [Quantum State Discrimination](https://arxiv.org/abs/0810.1970)
 - [Phase randomization improves the security of quantum key distribution](https://arxiv.org/pdf/quant-ph/0504209)
+- [SECURITY OF QUANTUM KEY DISTRIBUTION USING WEAK COHERENT STATES WITH NONRANDOM PHASES](https://arxiv.org/pdf/quant-ph/0610203)
 
 ## Prepare & Measure BB84 up to check bits
 
