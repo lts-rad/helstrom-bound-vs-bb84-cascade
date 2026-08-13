@@ -8,7 +8,7 @@ This differs from the textbook Intercept & Resend attack in that Eve does not 'a
 
 The attack relies on a weakened protocol that has no decoys, mean photon numbers between 0.6-1.0, and does not employ phase randomization.
 
-In particular the POVM needs coherences in photon number to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill  [https://arxiv.org/pdf/quant-ph/0610203](https://arxiv.org/pdf/quant-ph/0610203) where no security is attainable above 0.5 for QPSK, regardless of the reconciliation efficiency. See figure below
+In particular the POVM needs coherences in photon number to achieve quite a low minimum discrimination error, which phase randomization disables. This is known insecure and was analyzed by Lo & Preskill  [https://arxiv.org/pdf/quant-ph/0610203](https://arxiv.org/pdf/quant-ph/0610203) where no security is attainable above 0.5 for QPSK, regardless of the reconciliation efficiency. See figure below for how it scales against the toy protocol being considered here, where aspects like detector efficiency are simplified. 
 
 <img width="685" height="352" alt="image" src="https://github.com/user-attachments/assets/6c3d886b-e004-4a9f-9a44-c1187d46e858" />
 
