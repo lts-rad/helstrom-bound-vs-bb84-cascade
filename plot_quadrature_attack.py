@@ -112,8 +112,12 @@ class CorrectedChunkedSolver:
 def test_and_plot():
     """Test various key sizes and plot results."""
 
-    # Test key sizes
-    raw_sizes = [1024, 2048, 4096, 8192, 16384, 32768, 65536]
+    # About half of the raw bits survive basis sifting, so 400,000 raw bits
+    # exercises the hybrid solver at approximately 200,000 sifted bits.
+    raw_sizes = [
+        1024, 2048, 4096, 8192, 16384, 32768, 65536,
+        131072, 262144, 400000,
+    ]
 
     # Results storage
     results = {
