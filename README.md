@@ -14,7 +14,7 @@ In particular the POVM needs coherences to achieve quite a low minimum discrimin
 ### Updates
 
 Since this work was done the attack speed has been improved, where the constraint solver was suboptimal before,
-being limited to about 16k sifts, the demo can now run up to a million on a consumer laptop.
+being limited to about 16k sifts for full key recovery, the demo can now run up to a million on a consumer laptop.
 
 Subsequently, another attack has also been released against cascade (https://arxiv.org/abs/2603.29669).
  "The Manipulate-and-Observe Attack on Quantum Key Distribution" targets cleverly disturbing reconciliation for recovery.
