@@ -28,6 +28,7 @@ Another aspect to understand is that cross-basis overlap reduces as mean photon 
 The attack operates somewhere between the yellow and red dashed lines above. 
 
 <img width="389" height="192" alt="image" src="https://github.com/user-attachments/assets/71b17c12-ea28-4ea2-8524-2f837ea1a100" />
+
 The cross basis overlap does vary based on mean photon number as seen in the table above
 
 <img width="1019" height="657" alt="image" src="https://github.com/user-attachments/assets/cd51d343-122c-401a-ba8b-cfbfe997fe9a" />
