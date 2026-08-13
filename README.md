@@ -22,14 +22,14 @@ In particular the POVM needs coherences in photon number to achieve quite a low 
 <img width="761" height="440" alt="image" src="https://github.com/user-attachments/assets/b512f2f6-75bd-4dec-85eb-65261c62804d" />
 
 Notice that the attack achieves a measured QBER notably lower than the Helstrom bound minimum error, even though Eve resends every packet.
+Another aspect to understand is that cross-basis overlap reduces as mean photon number increases, making the states easier to discriminate with lower minimum error.
+The attack operates somewhere between the yellow and red dashed lines above. 
 
 <img width="644" height="363" alt="image" src="https://github.com/user-attachments/assets/8038132d-66f8-4dbc-9f7b-d012cd12ca0f" />
 
 In the figure above it's easy to see that polarization encoding  (dashed lines) has more basis overlap than phase encoding (solid lines).
 This is intuitive as the angular separation between the encodings varies from 45 for polarization to 90 degrees for typical QPSK phase encoding.
 
-Another aspect to understand is that cross-basis overlap reduces as mean photon number increases, making the states easier to discriminate with lower minimum error.
-The attack operates somewhere between the yellow and red dashed lines above. 
 
 <img width="389" height="192" alt="image" src="https://github.com/user-attachments/assets/71b17c12-ea28-4ea2-8524-2f837ea1a100" />
 
